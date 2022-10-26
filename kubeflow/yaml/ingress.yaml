@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kfp-ingress
+  namespace: kubeflow
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: ml-pipeline-ui
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: "/minio"
+            backend:
+              service:
+                name: minio-service
+                port:
+                  number: 9000
