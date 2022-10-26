@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hpc-cm-viewer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: hpc-cm-viewer-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hpc-cm-viewer-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: hpc-cm-viewer-role
+subjects:
+  - kind: ServiceAccount
+    name: hpc-cm-viewer
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hpcjob-pod
+spec:
+  restartPolicy: Never
+  serviceAccount: hpc-cm-viewer
+  serviceAccountName: hpc-cm-viewer
+  containers:
+  - env:
+      - name: NAMESPACE
+        value: default
+      - name: JOBNAME
+        value: hpcjob
+    image: quay.io/ibmdpdev/lsf-pod:v0.0.1
+    imagePullPolicy: Always
+    name: hpcjob-hpc-cont
+    resources:
+      limits:
+        cpu: 500m
+        memory: 100Mi
+      requests:
+        cpu: 250m
+        memory: 100Mi
+    volumeMounts:
+      - mountPath: /credentials
+        name: credentials
+        readOnly: true
+      - mountPath: /s3credentials
+        name: s3credentials
+        readOnly: true
+      - mountPath: /script
+        name: script
+        subPath: script
+  volumes:
+  - name: credentials
+    secret:
+      defaultMode: 420
+      secretName: {{RESOURCE_SECRET}}
+  - name: s3credentials
+    secret:
+      defaultMode: 420
+      secretName: {{S3_SECRET}}
+  - name: script
+    configMap:
+      name: hpcjob-bridge-cm

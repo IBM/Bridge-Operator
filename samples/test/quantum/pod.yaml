@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bridge-cm-viewer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bridge-cm-viewer-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bridge-cm-viewer-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: bridge-cm-viewer-role
+subjects:
+  - kind: ServiceAccount
+    name: bridge-cm-viewer
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: quantumjob-pod
+spec:
+  restartPolicy: Never
+  serviceAccount: bridge-cm-viewer
+  serviceAccountName: bridge-cm-viewer
+  containers:
+    - env:
+        - name: NAMESPACE
+          # Put here a ns that you are using
+          value: default
+        - name: JOBNAME
+          value: quantumjob
+      image: quay.io/ibmdpdev/quantum-pod:v0.0.1
+      imagePullPolicy: Always
+      name: quantumjob-bridge-cont
+      resources:
+        limits:
+          cpu: 500m
+          memory: 100Mi
+        requests:
+          cpu: 250m
+          memory: 100Mi
+      volumeMounts:
+        - mountPath: /credentials
+          name: credentials
+          readOnly: true
+        - mountPath: /s3credentials
+          name: s3credentials
+          readOnly: true
+  volumes:
+    - name: credentials
+      secret:
+        defaultMode: 420
+        secretName: {{RESOURCE_SECRET}}
+    - name: s3credentials
+      secret:
+        defaultMode: 420
+        secretName: {{S3_SECRET}}

@@ -1,0 +1,21 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+    name: quantumjob-bridge-cm
+data:
+    # operator poll interval
+    updateInterval: "20"                                                            # Poll time
+    # job execution
+    resourceURL: https://us-east.quantum-computing.cloud.ibm.com/                   # URL for cluster
+    # execution script
+    jobdata.jobScript: {{SCRIPT}}
+    jobdata.scriptLocation: s3
+    jobdata.scriptMetadata: {{SCRIPT_MD}}
+    jobdata.jobParameters: {{PARAMS}}
+    jobdata.scriptExtraLocation: s3
+    #S3
+    s3.endpoint: {{ENDPOINT}}          #S3 endpoint
+    s3.secure: "false"                                                              # S3 secure
+    s3.secret:  {{S3_SECRET}}                                                        # S3 secret
+
+    s3upload.bucket: {{BUCKET}}                                                       # bucket

@@ -1,0 +1,68 @@
+{
+  "name": "sample-vqe",
+  "description": "A sample VQE program.",
+  "cost": 100000,
+  "spec": {
+    "parameters": {
+      "properties": {
+        "hamiltonian": {
+          "description": "Hamiltonian whose ground state we want to find.",
+          "type": "array"
+        },
+        "ansatz": {
+          "description": "Name of ansatz quantum circuit to use, default='EfficientSU2'",
+          "type": "string",
+          "default": "EfficientSU2"
+        },
+        "ansatz_config": {
+          "description": "Configuration parameters for the ansatz circuit.",
+          "type": "object"
+        },
+        "optimizer": {
+          "description": "Classical optimizer to use, default='SPSA'.",
+          "type": "string",
+          "default": "SPSA"
+        },
+        "x0": {
+          "description": "Initial vector of parameters. This is a numpy array.",
+          "type": "array"
+        },
+        "optimizer_config": {
+          "description": "Configuration parameters for the optimizer.",
+          "type": "object"
+        },
+        "shots": {
+          "description": "The number of shots used for each circuit evaluation.",
+          "type": "integer"
+        },
+        "use_measurement_mitigation": {
+          "description": "Use measurement mitigation, default=False.",
+          "type": "boolean",
+          "default": "False"
+        }
+      },
+      "$schema": "https://json-schema.org/draft/2019-09/schema",
+      "required": [
+        "hamiltonian"
+      ],
+      "return_values": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "properties": {
+          "result": {
+            "description": "Final result in SciPy optimizer format",
+            "type": "object"
+          }
+        }
+      },
+      "interim_results": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "properties": {
+          "Parameters": {
+            "description": "Parameter vector at current optimization step. This is a numpy array.",
+            "type": "array"
+          }
+        }
+      }
+    }
+  }
+}

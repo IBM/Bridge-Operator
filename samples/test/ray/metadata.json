@@ -1,0 +1,10 @@
+{
+  "pip": {
+    "requests":"2.26.0",
+    "qiskit":"0.34.2"
+  },
+  "env": {"MY_VARIABLE1": "foo", "MY_VARIABLE2": "bar"}
+}
+
+
+

@@ -1,0 +1,20 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: hpcjob-bridge-cm
+data:
+  resourceURL: {{RESOURCE_URL}}
+  resourcesecret: {{RESOURCE_SECRET}}
+  imagepullpolicy: Always
+  updateinterval: "20"
+  jobdata.jobScript: {{JOBSCRIPT}}
+  jobdata.scriptLocation: "s3"
+  jobproperties: |
+    {"NodesNumber": "1", "Queue": "normal", "RunLimitHour": "1", "RunLimitMinute": "0", 
+     "ErrorFileName": "sample.err", "OutputFileName": "sample.out"
+    }
+  #S3
+  s3.endpoint:  {{ENDPOINT}}
+  s3.secure: "false"                                                        # S3 secure
+  s3.secret: {{S3_SECRET}}
+  

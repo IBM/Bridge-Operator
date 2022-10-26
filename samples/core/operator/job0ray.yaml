@@ -1,0 +1,76 @@
+kind: BridgeJob
+apiVersion: bridgeoperator.ibm.com/v1alpha1
+metadata:
+  name: bridgejob-ray
+spec:
+  image: quay.io/ibmdpdev/ray-pod:v0.0.1
+  imagepullpolicy: Always
+  resourceURL: {{RESOURCE_URL}}
+  resourcesecret: {{RESOURCE_SECRET}}
+  updateinterval: 20
+  jobdata:
+    jobscript: |
+      import ray
+      import requests
+      import qiskit
+      import os
+      import argparse
+      
+      class ParseKwargs(argparse.Action):
+          def __call__(self, parser, namespace, values, option_string=None):
+              setattr(namespace, self.dest, dict())
+              for value in values:
+                  key, value = value.split('=')
+                  getattr(namespace, self.dest)[key] = value
+      
+      parser = argparse.ArgumentParser()
+      parser.add_argument('-k', '--kwargs', nargs='*', action=ParseKwargs)
+      args = parser.parse_args()
+      
+      numberOfIterations = int(args.kwargs["iterations"])
+      print(f"Requested number of iterations is: {numberOfIterations}")
+      
+      print(f'environment variable MY_VARIABLE1 has a value of {os.getenv("MY_VARIABLE1")}, '
+            f'MY_VARIABLE2 has a value of {os.getenv("MY_VARIABLE2")}')
+      
+      ray.init()
+      
+      @ray.remote
+      class Counter:
+          def __init__(self):
+              self.counter = 0
+      
+          def inc(self):
+              self.counter += 1
+      
+          def get_counter(self):
+              return self.counter
+      
+      counter = Counter.remote()
+      
+      for _ in range(numberOfIterations):
+          ray.get(counter.inc.remote())
+          print(ray.get(counter.get_counter.remote()))
+      
+      print("Requests", requests.__version__)
+      print("Qiskit", qiskit.__version__)
+    scriptlocation: inline
+    scriptmetadata: |
+      {
+        "pip": {
+          "requests":"2.26.0",
+          "qiskit":"0.34.2"
+        },
+        "env": {"MY_VARIABLE1": "foo", "MY_VARIABLE2": "bar"}
+      }
+    jobparameters: |
+      {
+          "iterations":"7"
+      }
+    scriptextralocation: inline
+  s3storage:
+    s3secret: {{S3_SECRET}}
+    endpoint: {{ENDPOINT}}
+    secure: false
+  s3upload:
+    bucket: {{BUCKET}}

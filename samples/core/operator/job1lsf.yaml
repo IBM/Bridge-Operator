@@ -1,0 +1,28 @@
+kind: BridgeJob
+apiVersion: bridgejob.ibm.com/v1alpha1
+metadata:
+  name: lsfjob
+spec:
+  resourceURL: {{RESOURCE_URL}}
+  resourcesecret: {{RESOURCE_SECRET}}
+  image: quay.io/ibmdpdev/lsf-pod:v0.0.1
+  imagepullpolicy: Always
+  updateinterval: 20
+  jobdata:
+    jobscript: |          # Here parameters are in script, move them out
+      #BSUB -J test
+      #BSUB -o test_%J.out
+      #BSUB -e test_%J.err
+      #BSUB -q normal
+      #BSUB -W 0:10
+      #BSUB -nnodes 1
+      echo $PWD
+    scriptlocation: inline
+  jobproperties: |
+    {"NodesNumber": "1", "Queue": "normal", "RunLimitHour": "1", "RunLimitMinute": "0",
+     "ErrorFileName": "sample.err", "OutputFileName": "sample.out"
+    }
+  s3storage:
+    s3secret: {{S3_SECRET}}
+    endpoint: {{ENDPOINT}}
+    secure: false

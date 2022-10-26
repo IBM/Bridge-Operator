@@ -1,0 +1,26 @@
+kind: BridgeJob
+apiVersion: bridgejob.ibm.com/v1alpha1
+metadata:
+  name: slurmjob
+spec:
+  resourceURL: {{RESOURCE_URL}}
+  image: quay.io/ibmdpdev/slurm-pod:v0.0.1
+  resourcesecret: {{RESOURCE_SECRET}}
+  imagepullpolicy: Always
+  updateinterval: 20
+  jobdata:
+    jobscript: {{JOBSCRIPT}}
+    scriptlocation: "s3"
+  jobproperties: |
+      {
+      "NodesNumber":"1", "Queue": "skylake", "Tasks": "1", "slurmJobName": "test",
+      "currentWorkingDir": "/home/ec2-user/test/",
+      "envPath": "/usr/mpi/gcc/openmpi-4.0.3rc4/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/ibutils/bin",
+      "envLibPath": "/usr/mpi/gcc/openmpi-4.0.3rc4/lib",
+      "ErrorFileName": "slurmjob-sample.err",
+      "OutputFileName": "slurmjob-sample.out"
+      }
+  s3storage:
+    s3secret: {{S3_SECRET}}
+    endpoint: {{ENDPOINT}}
+    secure: false  

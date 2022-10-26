@@ -1,0 +1,27 @@
+kind: BridgeJob
+apiVersion: bridgejob.ibm.com/v1alpha1
+metadata:
+  name: lsfjob
+spec:
+  resourceURL: {{RESOURCE_URL}}
+  resourcesecret: {{RESOURCE_SECRET}}
+  image: quay.io/ibmdpdev/lsf-pod:v0.0.1
+  imagepullpolicy: Always
+  updateinterval: 20
+  jobdata:
+    jobscript: {{REMOTEJOBSCRIPT}}
+    scriptlocation: remote
+    additionaldata: {{ADDITIONALDATA}}
+    scriptextralocation: "s3"
+  jobproperties: |
+    {"NodesNumber": "1", "Queue": "normal", "RunLimitHour": "1", "RunLimitMinute": "0",
+     "ErrorFileName": "sample.err", "OutputFileName": "sample.out",
+     "inputfiledirectory": "/home/lsfadmin/shared/tests/", "pastid": "206"
+    }
+  s3storage:
+    s3secret: {{S3_SECRET}}
+    endpoint:  {{ENDPOINT}}
+    secure: false
+  s3upload:
+    bucket: {{BUCKET}}
+    files: {{UPLOADFILE}}

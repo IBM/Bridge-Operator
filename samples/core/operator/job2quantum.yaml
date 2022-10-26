@@ -1,0 +1,22 @@
+kind: BridgeJob
+apiVersion: bridgejob.ibm.com/v1alpha1
+metadata:
+  name: bridgejob-quantum
+spec:
+  image: quay.io/ibmdpdev/quantum-pod:v0.0.1
+  imagepullpolicy: Always
+  resourceURL: {{RESOURCE_URL}}
+  resourcesecret: {{RESOURCE_SECRET}}
+  updateinterval: 20
+  jobdata:
+    jobscript: {{SCRIPT}}
+    scriptlocation: s3
+    scriptmetadata: {{SCRIPT_MD}}
+    jobparameters: {{PARAMS}}
+    scriptextralocation: s3
+  s3storage:
+    s3secret: {{S3_SECRET}}
+    endpoint: {{ENDPOINT}}
+    secure: false
+  s3upload:
+    bucket: {{BUCKET}}

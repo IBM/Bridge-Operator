@@ -1,0 +1,25 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: hpcjob-bridge-cm
+data:
+  resourceURL: {{RESOURCE_URL}}
+  resourcesecret: {{RESOURCE_SECRET}}
+  imagepullpolicy: Always
+  updateinterval: "20"
+  jobdata.jobScript: {{REMOTEJOBSCRIPT}}
+  jobdata.scriptLocation: remote
+
+  jobproperties: |
+    {"NodesNumber": "1", "Queue": "normal", "RunLimitHour": "1", "RunLimitMinute": "0", 
+     "ErrorFileName": "sample.err", "OutputFileName": "sample.out",
+     "inputfiledirectory": "/home/lsfadmin/shared/tests", "pastid": "206"
+    }
+  #Download files from S3 and upload to cluster, inputfiledirectory and pastid must be in jobproperties
+  jobdata.scriptExtraLocation: "s3"
+  jobdata.additionalData: {{ADDITIONALDATA}}
+  #S3
+  s3.endpoint: {{ENDPOINT}}
+  s3.secure: "false"                                                        # S3 secure
+  s3.secret: {{S3_SECRET}}
+  

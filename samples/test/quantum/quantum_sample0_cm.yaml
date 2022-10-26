@@ -1,0 +1,25 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: quantumjob-bridge-cm
+data:
+  # operator poll interval
+  updateInterval: "20"                                                  # Poll time
+  # job execution
+  resourceURL: {{RESOURCE_URL}}         # URL for cluster
+  # execution script
+  jobdata.jobScript: "hello-world"                                      # Script name
+  jobdata.scriptLocation: remote
+  jobdata.jobParameters: |
+    {
+      "params": {
+        "iterations": 5
+      }
+    }
+  jobdata.scriptExtraLocation: inline
+  #S3
+  s3.endpoint: {{ENDPOINT}}           #S3 endpoint
+  s3.secure: "false"                                                              # S3 secure
+  s3.secret:  {{S3_SECRET}}                                                       # S3 secret
+
+  s3upload.bucket: {{BUCKET}}                                                      # bucket

@@ -1,0 +1,6 @@
+{
+  "params": {
+    "hamiltonian":[[1,"XX"],[1,"YY"],[1,"ZZ"]],
+    "optimizer_config":{"maxiter":10}
+  }
+}
