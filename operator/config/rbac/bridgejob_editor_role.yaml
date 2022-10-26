@@ -1,0 +1,24 @@
+# permissions for end users to edit bridgejobs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: bridgejob-editor-role
+rules:
+- apiGroups:
+  - bridgejob.ibm.com
+  resources:
+  - bridgejobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - bridgejob.ibm.com
+  resources:
+  - bridgejobs/status
+  verbs:
+  - get

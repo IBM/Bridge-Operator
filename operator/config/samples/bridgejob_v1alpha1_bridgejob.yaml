@@ -1,0 +1,6 @@
+apiVersion: bridgejob.ibm.com/v1alpha1
+kind: BridgeJob
+metadata:
+  name: bridgejob-sample
+spec:
+  # TODO(user): Add fields here

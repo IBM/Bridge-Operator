@@ -1,0 +1,184 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.0
+  creationTimestamp: null
+  name: bridgejobs.bridgejob.ibm.com
+spec:
+  group: bridgejob.ibm.com
+  names:
+    kind: BridgeJob
+    listKind: BridgeJobList
+    plural: bridgejobs
+    singular: bridgejob
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: BridgeJob is the Schema for the bridgejobs API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: BridgeJobSpec defines the desired state of BridgeJob
+            properties:
+              image:
+                default: ibm.com/bridge-operator-lsf-pod:0.1
+                description: 'This field is a way to integrate multiple watcher pod.
+                  Depending on the the pod name we can communicate with a different
+                  external system Currently implemented are include: LSF - HPC with
+                  LSF (https://www.ibm.com/docs/en/slsfh/10.2.0?topic=overview) SLURM
+                  - HPC with SLURM (https://slurm.schedmd.com/documentation.html)
+                  Quantum - quantum integration through IBM Cloud (https://www.ibm.com/quantum-computing/services/)
+                  Ray - ray cluster integration (https://www.ray.io/)'
+                type: string
+              imagepullpolicy:
+                default: IfNotPresent
+                description: Use "IfNotPresent" for normal functioning and "Always"
+                  when you are testing a pod and plan to iterate on the pod implementations
+                type: string
+              jobdata:
+                description: struct of data related to job files
+                properties:
+                  additionaldata:
+                    description: List of additional data files to be uploaded to remote
+                      resource A list of S3 locations in the form of comma separated
+                      bucket:object pairs - here we assume that overall S3 information,
+                      including URL and security is specified in S3 storage structure
+                    type: string
+                  jobparameters:
+                    description: 'Another component of script is execution parameters
+                      parameters specified in JSON with remote system specific format
+                      We currently support several ways to specify script parameters:
+                      inline job parameters content here - the full content of the
+                      script parameters as a json string specify job parameters location
+                      in S3 in the form of comma separated bucket:object - here we
+                      assume that overall S3 information, including URL and security
+                      is specified in S3 storage structure Location is specified by
+                      ScriptExtra location'
+                    type: string
+                  jobscript:
+                    description: 'Job script can get different forms depending on
+                      the external system Batch script for HPC - LSF and Slurm Python
+                      for quantum and Ray We currently support several ways to specify
+                      script: specify location of script on the remote system - string
+                      with the location inline script content here - the full content
+                      of the script as a string specify script location in S3 in the
+                      form of bucket:object - here we assume that overall S3 information,
+                      including URL and security is specified in S3 storage structure
+                      Location is specified by Script location'
+                    type: string
+                  scriptextralocation:
+                    default: inline
+                    description: 'Script extra (metadata/parameters) location - Location
+                      of script metadata/parameters Possible values are: "inline"
+                      "s3"'
+                    type: string
+                  scriptlocation:
+                    default: remote
+                    description: 'Script location - Location of script Possible values
+                      are: "remote" "inline" "s3"'
+                    type: string
+                  scriptmetadata:
+                    description: 'In addition to the script itself, some remote systems
+                      require script metadata, for example: In the case of quantum,
+                      script metadata includes definition of input/output and intermediate
+                      data In the case of Ray script metadata include the list of
+                      python libraries that need to be added for execution Metadata
+                      is specified in JSON with remote system specific format We currently
+                      support several ways to specify script metadata: inline script
+                      metadata content here - the full content of the script metadata
+                      as a json string specify script metadata location in S3 in the
+                      form of bucket:object - here we assume that overall S3 information,
+                      including URL and security is specified in S3 storage structure
+                      Location is specified by ScriptExtra location'
+                    type: string
+                required:
+                - jobscript
+                type: object
+              jobproperties:
+                description: Common job resources for external job (JSON string)
+                type: string
+              kill:
+                description: A flag to kill an external job
+                type: boolean
+              resourceURL:
+                description: Access to the external resource
+                type: string
+              resourcesecret:
+                description: Secret containing credential for resource access
+                type: string
+              s3storage:
+                description: struct for S3 access information. If Secret defined,
+                  assume we want to use S3
+                properties:
+                  endpoint:
+                    default: ""
+                    type: string
+                  s3secret:
+                    default: ""
+                    type: string
+                  secure:
+                    default: true
+                    type: boolean
+                type: object
+              s3upload:
+                description: struct for uploading results.
+                properties:
+                  bucket:
+                    type: string
+                  files:
+                    default: ""
+                    description: 'Files are uploaded to the specified bucket to the
+                      object /jobname/filename Files uploaded by default are: output,
+                      errors, and script'
+                    type: string
+                required:
+                - bucket
+                type: object
+              updateinterval:
+                default: 20
+                description: Update interval for the watcher pod
+                type: integer
+            required:
+            - jobdata
+            - resourceURL
+            - resourcesecret
+            type: object
+          status:
+            description: BridgeJobStatus defines the observed state of BridgeJob
+            properties:
+              completiontime:
+                description: Represents time when the job in External resource (HPC
+                  cluster) was completed.
+                type: string
+              jobstatus:
+                description: Current job status
+                type: string
+              message:
+                description: Message filled when job is finished in any state Should
+                  contain place where output files are located
+                type: string
+              starttime:
+                description: Represents time when the job was submitted to External
+                  resource (HPC cluster).
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
