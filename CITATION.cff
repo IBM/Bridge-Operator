@@ -1,0 +1,11 @@
+cff-version: 1.0.0
+message: "If you use the Bridge operator, please consider citing as below."
+authors:
+  - family-names: Lublinsky, Jennings, Spišaková
+    given-names: Boris, Elise, Victoria
+title: "A Kubernetes 'Bridge' operator between cloud and external resources"
+version: 0.0.1
+url: "https://github.com/Accelerated-Discovery/bridge-operator"
+doi: https://arxiv.org/abs/2207.02531
+date-released: 2022-10-26
+
