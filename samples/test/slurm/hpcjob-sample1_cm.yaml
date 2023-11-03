@@ -11,7 +11,7 @@ data:
   # execution script
   jobdata.jobScript: {{JOBSCRIPT}}
   jobdata.scriptLocation: s3
-  jobdata.jobParameters: |                                                  # parameters
+  jobparameters: |                                                  # parameters
     {
       "NodesNumber":"1", "Queue": "skylake", "Tasks": "1", "slurmJobName": "test",
       "currentWorkingDir": "/home/ec2-user/test",

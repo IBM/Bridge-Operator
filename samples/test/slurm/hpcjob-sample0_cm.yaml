@@ -17,7 +17,7 @@ data:
     module load intelmpi
     echo "Test run"
   jobdata.scriptLocation: inline
-  jobProperties: |                                                  # parameters
+  jobproperties: |                                                  # parameters
     {
       "NodesNumber":"1", "Queue": "skylake", "Tasks": "1", "slurmJobName": "test",
       "currentWorkingDir": "/home/ec2-user",
