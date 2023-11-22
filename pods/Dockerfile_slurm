@@ -3,26 +3,24 @@ FROM golang:alpine3.14 AS builder
 RUN apk update && apk add --no-cache bash
 
 WORKDIR /workspace
-# Create directories
-RUN mkdir slurm
-RUN mkdir utils
 
-# Copy the Go Modules manifests and code
-COPY slurm/go.mod slurm/go.mod
-COPY slurm/go.sum slurm/go.sum
-COPY slurm/main.go slurm/main.go
-
-COPY utils/go.mod utils/go.mod
-COPY utils/go.sum utils/go.sum
-COPY utils/podutils.go utils/podutils.go
+# Copy the Go Modules manifests
+COPY slurm/go.mod slurm/go.sum slurm/
+COPY utils/go.mod utils/go.sum utils/
 
 # cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
 RUN cd utils && go mod download
-RUN cd slurm && go mod download && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o slurm-pod
+RUN cd slurm && go mod download
+
+# Copy code
+COPY slurm/* slurm/
+COPY utils/* utils/
+
+RUN cd slurm && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o slurm-pod
 
 #FROM registry.access.redhat.com/ubi9-micro:latest
-FROM alpine
+FROM alpine:3.14
 WORKDIR /
 COPY --from=builder /workspace/slurm/slurm-pod slurm-pod
 RUN mkdir downloads && chmod -R 777 downloads
