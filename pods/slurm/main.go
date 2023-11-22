@@ -5,6 +5,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -46,7 +47,6 @@ var S3 string
 var UPLOAD string
 var DOWNLOAD string
 var JobMap map[string]interface{}
-var JobProp map[string]string
 
 // HPC job resource definitions
 var RESOURCES = map[string]string{
@@ -111,17 +111,11 @@ func checkSlurmToken(slurmUsername string, slurmToken string) {
 
 }
 
-// Build body for the HPC job submission
-func buildBody(script string) string {
-	var xmlString string
-	xmlPart := fmt.Sprintf("{\"job\":{\"partition\":\"%s\",\"tasks\":%s,\"name\":\"%s\",\"nodes\":%s,\"current_working_directory\":\"%s\",\"environment\":{\"PATH\":\"%s\",\"LD_LIBRARY_PATH\":\"%s\"}},\"script\":\"", JobProp["Queue"], JobProp["Tasks"], JobProp["slurmJobName"], JobProp["NodesNumber"], JobProp["currentWorkingDir"], JobProp["envPath"], JobProp["envLibPath"])
-	xmlString += fmt.Sprintf("%s%s%s\"} ", xmlString, xmlPart, script)
-	return xmlString
-}
-
 // Submit request for job execution
 func submit(slurmUsername string, slurmToken string, data map[string]string) int {
 	url := HPCURL + "/job/submit"
+
+	// Create API request body
 	jobscript := ""
 	if data["jobdata.scriptLocation"] == "s3" {
 		s3info := strings.Split(data["jobdata.jobScript"], ":")
@@ -130,15 +124,24 @@ func submit(slurmUsername string, slurmToken string, data map[string]string) int
 		jobscript = data["jobdata.jobScript"]
 	}
 
-	paramstr := data["jobproperties"]
-	err := json.Unmarshal([]byte(paramstr), &JobProp)
+	var jobProp Job
+	err := json.Unmarshal([]byte(data["jobproperties"]), &jobProp)
 	if err != nil {
-		klog.Info("Error in JobProperties provided ", err)
-
+		klog.Error("Error in jobproperties provided ", err)
+		return 0
 	}
-	str_body := buildBody(jobscript)
 
-	req, err := http.NewRequest("POST", url, strings.NewReader(str_body))
+	var jobSubmissionBody JobSubmissionBody
+	jobSubmissionBody.Job = jobProp
+	jobSubmissionBody.Script = jobscript
+	body, err := json.Marshal(jobSubmissionBody)
+	if err != nil {
+		klog.Error("Error while creating API submission request body", err)
+		return 0
+	}
+
+	// Create API request
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
 	if err != nil {
 		klog.Error("Failed to create http request to connect to HPC cluster ", err)
 		return 0
@@ -148,6 +151,7 @@ func submit(slurmUsername string, slurmToken string, data map[string]string) int
 	req.Header.Set("X-SLURM-USER-NAME", slurmUsername)
 	req.Header.Set("X-SLURM-USER-TOKEN", slurmToken)
 
+	// Perform API request
 	respBody, statusCode := podutils.SendReq(req)
 
 	if statusCode != 200 {
@@ -303,7 +307,7 @@ func main() {
 
 	// If an ID is present in the config map it means that that we have already started a job
 	if len(id) == 0 {
-		klog.Info("Slurm Job with name ", JOB_NAME, " does not exist. Submitting new job.")
+		klog.Info("Slurm Job with name ", JOB_NAME, " does not exist. Submitting new job...")
 
 		intId := submit(slurmUsername, slurmToken, cm.Data)
 		id = fmt.Sprint(intId)
@@ -311,7 +315,7 @@ func main() {
 		if len(id) == 0 {
 			// Failed to submit a job
 			info["jobStatus"] = FAILED
-			info["message"] = "Failed to submit a job to HPC"
+			info["message"] = "Failed to submit a job to Slurm cluster"
 		} else {
 			info["id"] = id
 			info["jobStatus"] = SUBMITTED
@@ -324,7 +328,7 @@ func main() {
 		if len(id) != 0 {
 			monitor(slurmUsername, slurmToken, info)
 		} else {
-			klog.Exit("Failed to start HPC job")
+			klog.Exit("Failed to start Slurm job")
 		}
 	} else {
 		// Job is already running
